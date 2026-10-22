@@ -3,6 +3,11 @@ import org.junit.Test;
 import java.util.Locale;
 import static org.junit.Assert.*;
 public class StatsTextTest {
+    @Test public void rates() {
+        assertEquals("0 KB/s", StatsText.rate(-5));
+        assertEquals("850 KB/s", StatsText.rate(850 * 1024));
+        assertEquals("1.5 MB/s", StatsText.rate(1536 * 1024));
+    }
     @Test public void preservesEnglishExactly() {
         String text = "CPU 8%  ·  Memory 1202 MB free  ·  Storage 0.8 GB free";
         assertEquals(text, StatsText.forLocale(text, Locale.ENGLISH));

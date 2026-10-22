@@ -40,7 +40,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
+import android.net.TrafficStats;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -104,7 +104,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     static int COLUMNS = 4;
     private boolean rtlAppGrid;
     private static final long MINUTE_MS = 60_000L;
-    private static final long STATS_MS = 10_000L;
+    private static final long STATS_MS = 3_000L;
     /**
      * 2025-01-01. TVs without a clock battery boot at the epoch (08:00 in China) and keep it until network
      * time arrives; the clock, date and greeting stay hidden before then.
@@ -170,9 +170,17 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private TextView btnWifi;
     /** The network pill's icon as last set, so a refresh that changes nothing does not lay the top bar out again. */
     private int wifiIcon;
+    /** The Wi-Fi pill's internet dot (Ping), 0 before the first measurement. */
+    private int pingColor;
     /** The pills have been filled in once; later resumes refresh them after the first frame. */
     private boolean pillsShown;
     private TextView shamsiDate;
+    /** weather_location in config.xml; empty hides the line. */
+    private TextView weather;
+    private String weatherLatLon;
+    private MediaCard mediaCard;
+    private View mediaView, miniMedia;
+    private long weatherFetched;
     private TextView stats;
     private List<RaceWeekend.Race> raceCalendar;
     private View racePanel;
@@ -337,6 +345,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             if (festive) updateWifiLabel();
             sky.update();
             wallpaperPlayer.update();
+            updateWeather();
+            updatePing();
             handler.postDelayed(this, MINUTE_MS);
         }
     };
@@ -425,6 +435,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
         btnWifi = findViewById(R.id.btnWifi);
         shamsiDate = findViewById(R.id.shamsiDate);
+        weather = findViewById(R.id.weather);
+        weatherLatLon = getString(R.string.weather_location).trim();
+        mediaView = findViewById(R.id.mediaCard);
+        miniMedia = findViewById(R.id.miniMedia);
+        mediaCard = new MediaCard(this, mediaView, miniMedia, findViewById(R.id.topButtons), handler);
+        miniMedia.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> placeMediaCard(mediaView));
+        mediaView.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> placeMediaCard(v));
         stats = findViewById(R.id.stats);
         raceCalendar = cfg.raceCalendar;
         racePanel = findViewById(R.id.racePanel);
@@ -445,6 +462,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         hiddenApps = new HashSet<>(cfg.hiddenApps);
 
         grid = findViewById(R.id.grid);
+        // The grid's top padding is set after the first layout, which moves the dock: place the card again then.
+        grid.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> mediaView.post(() -> placeMediaCard(mediaView)));
         rtlAppGrid = getResources().getBoolean(R.bool.rtl_app_grid);
         // Mirror only the app grid; the header and other locales keep their own layouts.
         grid.setLayoutManager(new GridLayoutManager(this, COLUMNS) {
@@ -545,6 +564,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         grid.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView rv, int dx, int dy) {
+                // The media card belongs to the top of Home: it steps aside once the app rows scroll up.
+                mediaCard.setScrolledAway(rv.computeVerticalScrollOffset() > 0);
                 if (!glassShown) return;
                 glassTargetY -= dy;
                 glassScrollShift -= dy;
@@ -593,6 +614,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         btnSettings.setOnClickListener(v -> {
             if (launcherSettingsButton) startActivityForResult(
                     new Intent(this, LauncherSettingsActivity.class), LAUNCHER_SETTINGS_REQUEST);
+            else if (settingsKeyPanel) open(new Intent(this, QuickSettingsActivity.class));
             else open(systemIntent(Settings.ACTION_SETTINGS));
         });
         btnReorder = findViewById(R.id.btnReorder);
@@ -838,6 +860,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         sky.update();
         wallpaperPlayer.start();
         handler.postDelayed(minuteTick, MINUTE_MS);
+        updateWeather();
+        updatePing();
+        mediaCard.start();
         if (festive && diya != null) {
             diya.start();
             LocalDate today = LocalDate.now();
@@ -1011,6 +1036,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         ambient.animate().cancel();
         heroArt.animate().cancel();
         handler.removeCallbacks(minuteTick);
+        mediaCard.stop();
         stopStats();
         if (diya != null) diya.stop();
         cancelPendingFocusScroll();
@@ -1061,6 +1087,89 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             if (libraryFocusPending && appLibrary == null) focusLibrary();
             showCardPrompt();
         }
+    }
+
+    /**
+     * The media card sits under the Wi-Fi and Settings buttons, right edges aligned, centred in the gap between
+     * them and the dock band.
+     */
+    private void placeMediaCard(View card) {
+        View top = findViewById(R.id.topButtons);
+        int[] a = new int[2], b = new int[2];
+        top.getLocationInWindow(a);
+        a[1] -= Math.round(top.getTranslationY());   // where the buttons rest, not where the lift has them now
+        int[] w0 = new int[2];
+        btnWifi.getLocationInWindow(w0);
+        int rowWidth = a[0] + top.getWidth() - w0[0];
+        if (rowWidth > 0 && miniMedia.getWidth() != rowWidth) {
+            miniMedia.getLayoutParams().width = rowWidth;
+            miniMedia.requestLayout();
+        }
+        miniMedia.setX(w0[0]);
+        miniMedia.setY(a[1] + top.getHeight() - MediaCard.TOP_LIFT_DP * density + 8 * density);
+        if (card.getVisibility() != View.VISIBLE) return;
+        grid.getLocationInWindow(b);
+        // The dock band starts about 14 dp above the first row of tiles, which begins at the grid's top padding.
+        float gapTop = a[1] + top.getHeight(), dockTop = b[1] + grid.getPaddingTop() - 14 * density;
+        // From the Wi-Fi button's left edge to the row's right edge, so both sides line up with the buttons.
+        int[] w = new int[2];
+        btnWifi.getLocationInWindow(w);
+        int width = a[0] + top.getWidth() - w[0];
+        if (card.getWidth() != width && width > 0) {
+            card.getLayoutParams().width = width;
+            card.requestLayout();
+            return;   // placed again by the layout change
+        }
+        card.setX(w[0]);
+        card.setY(Math.max(gapTop, (gapTop + dockTop - card.getHeight()) / 2f));
+    }
+
+    /** Each minute on Home: green, yellow or red after the network name, so buffering can be blamed on the line or the app. */
+    private void updatePing() {
+        if (festive) return;   // the diya replaces the Wi-Fi icon then
+        new Thread(() -> {
+            int color = Ping.color(Ping.measure());
+            handler.post(() -> {
+                if (color == pingColor) return;
+                pingColor = color;
+                setWifiDrawables();
+            });
+        }, "ping").start();
+    }
+
+    private void setWifiDrawables() {
+        if (wifiIcon == 0) return;
+        GradientDrawable dot = null;
+        if (pingColor != 0) {
+            // The pill's drawableTint would paint the dot white like the icon; keep its own color.
+            dot = new GradientDrawable() {
+                @Override
+                public void setTintList(android.content.res.ColorStateList tint) {}
+            };
+            dot.setShape(GradientDrawable.OVAL);
+            dot.setColor(pingColor);
+            int size = Math.round(8 * density);
+            dot.setSize(size, size);
+        }
+        btnWifi.setCompoundDrawablesRelativeWithIntrinsicBounds(getDrawable(wifiIcon), null, dot, null);
+    }
+
+    /** At most every 30 minutes; a failed fetch keeps the last reading and tries again next minute. */
+    private void updateWeather() {
+        if (weatherLatLon.isEmpty() || System.currentTimeMillis() - weatherFetched < 30 * MINUTE_MS) return;
+        weatherFetched = System.currentTimeMillis();
+        String latLon = weatherLatLon;
+        new Thread(() -> {
+            String text = Weather.fetch(latLon);
+            handler.post(() -> {
+                if (text == null) {
+                    weatherFetched = 0;
+                    return;
+                }
+                weather.setText(text);
+                weather.setVisibility(View.VISIBLE);
+            });
+        }, "weather").start();
     }
 
     @Override
@@ -1927,9 +2036,27 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (cpu >= 0) line.append(getString(R.string.stats_cpu, cpu));
         long[] mem = memUsedOfTotalMb();
         if (mem != null) appendStat(line, getString(R.string.stats_memory, mem[0], mem[1]));
-        String free = formatGb(getResources(), Environment.getDataDirectory().getFreeSpace());
-        if (!free.isEmpty()) appendStat(line, getString(R.string.stats_storage, free));
+        // Free storage lives in the control center's Storage tile; the Home line keeps to what changes by the second.
+        String net = netSpeed();
+        if (net != null) appendStat(line, net);
         return StatsText.forLocale(line.toString(), getResources().getConfiguration().getLocales().get(0));
+    }
+
+    private long rxPrev = -1, txPrev = -1, netWallPrev;
+
+    /** Download and upload speed since the last line, all interfaces; null on the first sample. */
+    private String netSpeed() {
+        long rx = TrafficStats.getTotalRxBytes(), tx = TrafficStats.getTotalTxBytes(), now = SystemClock.elapsedRealtime();
+        if (rx == TrafficStats.UNSUPPORTED || tx == TrafficStats.UNSUPPORTED) return null;
+        String text = null;
+        if (rxPrev >= 0 && now > netWallPrev) {
+            long ms = now - netWallPrev;
+            text = "↓ " + StatsText.rate((rx - rxPrev) * 1000 / ms) + "  ↑ " + StatsText.rate((tx - txPrev) * 1000 / ms);
+        }
+        rxPrev = rx;
+        txPrev = tx;
+        netWallPrev = now;
+        return text;
     }
 
     // -1: need another sample. -2: this source cannot be read (Android 9 hides /proc/stat from apps).
@@ -2041,13 +2168,6 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         } catch (IOException e) {
             return null;
         }
-    }
-
-    private static String formatGb(Resources res, long bytes) {
-        if (bytes <= 0) return "";
-        double gb = bytes / (1024.0 * 1024 * 1024);
-        return gb >= 10 ? res.getString(R.string.storage_gb_whole, gb)
-                : res.getString(R.string.storage_gb_decimal, gb);
     }
 
     // ---- navigation ------------------------------------------------------------------------------
@@ -2392,7 +2512,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         } else {
             if (icon != wifiIcon) {
                 wifiIcon = icon;
-                btnWifi.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, 0, 0, 0);
+                setWifiDrawables();
             }
         }
     }
