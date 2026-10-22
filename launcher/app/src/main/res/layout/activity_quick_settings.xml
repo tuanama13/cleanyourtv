@@ -1,28 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Quick settings opened by the remote's Settings button: the Inputs dropdown's glass panel, placed
-     under the Settings pill so it lines up on Home and sits top right over any app. -->
+<!-- Control center opened by the Settings pill or the remote's Settings button: glass modules of mixed sizes
+     floating over the dimmed screen, as on iOS. QuickSettingsActivity places them on the grid. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/scrim"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@drawable/cc_scrim">
 
     <LinearLayout
         android:id="@+id/panel"
         android:layout_width="wrap_content"
-        android:minWidth="220dp"
         android:layout_height="wrap_content"
         android:layout_gravity="top|end"
-        android:layout_marginTop="105dp"
-        android:layout_marginEnd="56dp"
-        android:orientation="vertical"
-        android:background="@drawable/glass_panel"
-        android:padding="6dp"
-        android:elevation="12dp">
+        android:layout_marginTop="48dp"
+        android:layout_marginEnd="48dp"
+        android:orientation="vertical">
 
-        <LinearLayout
+        <GridLayout
             android:id="@+id/rows"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical" />
+            android:columnCount="5"
+            android:rowCount="3" />
     </LinearLayout>
 </FrameLayout>

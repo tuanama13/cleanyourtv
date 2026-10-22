@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Control center module: frosted liquid glass at rest (a dark base stands in for the blur Android 11 cannot do),
+     solid white when focused, as on iOS. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <gradient android:angle="270" android:startColor="#FFFFFFFF" android:endColor="#EBF2F2F7" />
+            <corners android:radius="26dp" />
+        </shape>
+    </item>
+    <item>
+            <layer-list>
+                <item><shape android:shape="rectangle"><solid android:color="#C21E1E22" /><corners android:radius="26dp" /></shape></item>
+                <item><shape android:shape="rectangle">
+                    <gradient android:angle="270" android:startColor="#38FFFFFF" android:centerColor="#0AFFFFFF" android:endColor="#1AFFFFFF" />
+                    <stroke android:width="1dp" android:color="#5CFFFFFF" />
+                    <corners android:radius="26dp" />
+                </shape></item>
+            </layer-list>
+    </item>
+</selector>

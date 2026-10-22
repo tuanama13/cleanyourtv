@@ -201,6 +201,23 @@
                         android:includeFontPadding="false"
                         android:visibility="gone" />
 
+                    <!-- Current weather ("29° Cerah"), shown when weather_location is set. -->
+                    <TextView
+                        android:id="@+id/weather"
+                        android:fontFeatureSettings="tnum"
+                        android:gravity="right"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="6dp"
+                        android:singleLine="true"
+                        android:ellipsize="end"
+                        android:textColor="#E6FFFFFF"
+                        android:textSize="17sp"
+                        android:fontFamily="@string/font_regular"
+                        android:letterSpacing="0.02"
+                        android:includeFontPadding="false"
+                        android:visibility="gone" />
+
                     <TextClock
                         android:id="@+id/date"
                         android:gravity="right"
@@ -387,4 +404,204 @@
         android:layout_height="10dp"
         android:alpha="0"
         android:importantForAccessibility="no" />
+    <!-- Media card (MediaCard): shown only while an app has a playing or paused media session. Placed in code
+         under the Wi-Fi and Settings buttons, halfway down to the dock. -->
+    <LinearLayout
+        android:id="@+id/mediaCard"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="@drawable/media_card_bg"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:id="@+id/mediaArt"
+                android:layout_width="84dp"
+                android:layout_height="84dp"
+                android:scaleType="centerCrop"
+                android:clipToOutline="true"
+                android:background="@drawable/media_art_bg"
+                android:contentDescription="@null" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="14dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/mediaTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:maxLines="2"
+                    android:ellipsize="end"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="16sp"
+                    android:fontFamily="@string/font_medium" />
+
+                <TextView
+                    android:id="@+id/mediaArtist"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:textColor="#B3FFFFFF"
+                    android:textSize="13sp"
+                    android:fontFamily="@string/font_regular" />
+
+                <TextView
+                    android:id="@+id/mediaApp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:textColor="#73FFFFFF"
+                    android:textSize="11sp"
+                    android:letterSpacing="0.1"
+                    android:textAllCaps="true"
+                    android:fontFamily="@string/font_medium" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/mediaProgress"
+            style="@android:style/Widget.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:layout_marginTop="14dp"
+            android:max="1000"
+            android:progressDrawable="@drawable/media_progress" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/mediaElapsed"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="#99FFFFFF"
+                android:textSize="11sp"
+                android:fontFeatureSettings="tnum"
+                android:fontFamily="@string/font_regular" />
+
+            <TextView
+                android:id="@+id/mediaDuration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#99FFFFFF"
+                android:textSize="11sp"
+                android:fontFeatureSettings="tnum"
+                android:fontFamily="@string/font_regular" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <ImageView
+                android:id="@+id/mediaPrev"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:padding="11dp"
+                android:src="@drawable/ic_prev"
+                android:background="@drawable/cc_round_bg"
+                android:tint="@drawable/pill_text"
+                android:focusable="true"
+                android:clickable="true"
+                android:contentDescription="@null" />
+            <ImageView
+                android:id="@+id/mediaPlay"
+                android:layout_width="54dp"
+                android:layout_height="54dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:padding="14dp"
+                android:src="@drawable/ic_play"
+                android:background="@drawable/cc_round_bg"
+                android:tint="@drawable/pill_text"
+                android:focusable="true"
+                android:clickable="true"
+                android:contentDescription="@null" />
+            <ImageView
+                android:id="@+id/mediaNext"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:padding="11dp"
+                android:src="@drawable/ic_next"
+                android:background="@drawable/cc_round_bg"
+                android:tint="@drawable/pill_text"
+                android:focusable="true"
+                android:clickable="true"
+                android:contentDescription="@null" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Mini player (MediaCard): replaces the media card while the app rows are scrolled, under the top buttons,
+         which move up to make room. -->
+    <LinearLayout
+        android:id="@+id/miniMedia"
+        android:layout_width="280dp"
+        android:layout_height="44dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="7dp"
+        android:paddingEnd="7dp"
+        android:background="@drawable/mini_media_bg"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/miniArt"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:scaleType="centerCrop"
+            android:clipToOutline="true"
+            android:background="@drawable/mini_art_bg"
+            android:contentDescription="@null" />
+
+        <TextView
+            android:id="@+id/miniTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="8dp"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:textColor="#FFFFFFFF"
+            android:textSize="13sp"
+            android:fontFamily="@string/font_medium" />
+
+        <ImageView
+            android:id="@+id/miniPlay"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_pause"
+            android:background="@drawable/cc_round_bg"
+            android:tint="@drawable/pill_text"
+            android:focusable="true"
+            android:clickable="true"
+            android:contentDescription="@null" />
+    </LinearLayout>
 </FrameLayout>

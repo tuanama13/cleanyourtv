@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The mini player under the top buttons: the pills' liquid glass. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient android:angle="270" android:startColor="#38FFFFFF" android:centerColor="#0DFFFFFF" android:endColor="#1FFFFFFF" />
+    <stroke android:width="1dp" android:color="#59FFFFFF" />
+    <corners android:radius="22dp" />
+</shape>

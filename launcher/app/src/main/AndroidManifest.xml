@@ -8,6 +8,10 @@
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- The control center draws Bluetooth blue while the radio is on. -->
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <!-- The weather line (Weather.java). -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <!-- Needed since Android 10 to read the Wi-Fi network name for the network pill. Never requested at
          runtime: build-and-install grants it with pm grant, so lint's Android 12 "ask for COARSE with
@@ -146,6 +150,31 @@
             <meta-data
                 android:name="android.accessibilityservice"
                 android:resource="@xml/home_key_service" />
+        </service>
+
+        <!-- Standby for the control center's Sleep tile and sleep timer; see SleepService. -->
+        <service
+            android:name=".SleepService"
+            android:label="@string/sleep_service_name"
+            android:exported="true"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/sleep_service" />
+        </service>
+        <receiver android:name=".SleepTimer" android:exported="false" />
+        <!-- Only so the Home media card may read media sessions; see MediaListener. -->
+        <service
+            android:name=".MediaListener"
+            android:label="@string/media_listener_name"
+            android:exported="true"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
         </service>
 
         <!-- The same clock, started by Home itself after home_idle_clock_minutes without input. -->

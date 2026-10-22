@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One round button of the connectivity module: a glass or blue circle with its name below. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:focusable="true"
+    android:clickable="true">
+
+    <ImageView
+        android:id="@+id/icon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:padding="13dp"
+        android:background="@drawable/cc_round_bg"
+        android:tint="@drawable/pill_text"
+        android:duplicateParentState="true"
+        android:contentDescription="@null" />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:maxWidth="96dp"
+        android:textColor="#E6FFFFFF"
+        android:textSize="11sp"
+        android:fontFamily="@string/font_medium" />
+</LinearLayout>

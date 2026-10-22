@@ -1,0 +1,15 @@
+# ZTE B866F V1.1 (IndiHome STB, Amlogic S905Y4, 32-bit), Android TV 11, firmware RTT0.211009.001
+# Apply: TV_HOST=<tv ip> tools/disable.sh examples/zte-b866f-v1.1/debloat.txt
+# Undo:  TV_HOST=<tv ip> tools/restore.sh examples/zte-b866f-v1.1/debloat.txt
+# Stock launcher: com.google.android.tvlauncher. Wait ~30 s before a reboot, or the change is not saved yet.
+com.google.android.feedback
+com.google.android.marvin.talkback
+com.google.android.play.games
+com.droidlogic.exoplayer2.demo
+com.zte.factorytesttool
+android.autoinstalls.config.zte.device
+# OTA updater: this firmware refuses pm disable-user for both (state stays "default"), so they stay enabled
+# com.ztestb.updater
+# com.ztestb.upgrade
+# home screen promo rows
+com.google.android.tvrecommendations
